@@ -8,35 +8,98 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./styles.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   </head>
   <body>
-    <header class="site-header">
-      <h1 class="site-title">Crystal & Stone Shop</h1>
-      <div class="header-actions">
-        <button id="openStoreButton" class="button primary">Open Store</button>
+    <!-- 3D Scene Container (Full Screen) -->
+    <div id="threejs-container" class="threejs-container">
+      <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+          <div class="spinner"></div>
+          <p>Loading Virtual Crystal Shop...</p>
+        </div>
       </div>
-    </header>
+      
+      <!-- 3D UI Overlays -->
+      <div id="crystal-info-panel" class="crystal-info-panel">
+        <button id="close-info-btn" class="close-info-btn">×</button>
+        <h3>
+          <span id="crystal-emoji" class="crystal-emoji">💎</span>
+          <span id="crystal-name">Crystal Name</span>
+        </h3>
+        <div id="crystal-meta" class="crystal-meta">Crystal • Color • Properties</div>
+        <div id="crystal-price" class="crystal-price">$0.00</div>
+        <div id="crystal-energy" class="crystal-energy"></div>
+        <div class="crystal-info-actions">
+          <button id="add-to-cart-3d" class="button">Add to Cart</button>
+        </div>
+      </div>
+      
+      <!-- Controls Help -->
+      <div id="controls-help" class="controls-help">
+        <h3>🔮 Virtual Crystal Shop</h3>
+        <div class="controls">
+          <p><strong>Navigation:</strong></p>
+          <ul>
+            <li>🖱️ <strong>Click arrows:</strong> Move between areas</li>
+            <li>🖱️ <strong>Click crystals:</strong> Examine and add to cart</li>
+            <li>🖥️ <strong>Click screen:</strong> Access store interface</li>
+            <li>📍 <strong>Click hotspots:</strong> Explore different sections</li>
+          </ul>
+          <p><strong>Fractal Navigation:</strong></p>
+          <ul>
+            <li>💎 <strong>Approach crystals:</strong> Glow intensifies when close</li>
+            <li>🖱️ <strong>Click nearby crystal:</strong> Enter close-up view</li>
+            <li>⌨️ <strong>Number keys (1-0):</strong> Quick access to nearby crystals</li>
+            <li>⬇️ <strong>Back arrow / Space:</strong> Exit close-up view</li>
+          </ul>
+          <p><strong>Keyboard Shortcuts:</strong></p>
+          <ul>
+            <li>⌨️ <strong>Arrow keys:</strong> Navigate between areas</li>
+            <li>⌨️ <strong>H:</strong> Toggle help panel</li>
+            <li>⌨️ <strong>Escape:</strong> Close panels / Exit close-up</li>
+            <li>⌨️ <strong>Space:</strong> Exit crystal close-up</li>
+          </ul>
+          <p><strong>Current Location:</strong></p>
+          <div id="location-indicator" class="location-indicator">Main Hall</div>
+        </div>
+        <button id="toggle-help" class="button">Hide Help</button>
+      </div>
+      
+      <!-- Navigation Arrows -->
+      <div id="navigation-arrows" class="navigation-arrows">
+        <div id="nav-left" class="nav-arrow nav-left">◀</div>
+        <div id="nav-right" class="nav-arrow nav-right">▶</div>
+        <div id="nav-forward" class="nav-arrow nav-forward">▲</div>
+        <div id="nav-back" class="nav-arrow nav-back">▼</div>
+      </div>
+      
+      <!-- Navigation Hotspots -->
+      <div id="navigation-hotspots" class="navigation-hotspots">
+        <div id="hotspot-crystals" class="hotspot" data-target="crystal-garden">💎 Crystal Garden</div>
+        <div id="hotspot-screen" class="hotspot" data-target="computer-terminal">🖥️ Computer Terminal</div>
+        <div id="hotspot-entrance" class="hotspot" data-target="entrance">🚪 Entrance</div>
+      </div>
+      
+      <!-- Mini Cart Display -->
+      <div id="mini-cart" class="mini-cart">
+        <div class="cart-icon">🛒</div>
+        <div class="cart-count" id="cart-count">0</div>
+        <div class="cart-total" id="cart-total">$0.00</div>
+      </div>
+    </div>
 
-    <main class="site-main">
-      <section class="hero">
-        <h2>Adorn your journey with the right energy</h2>
-        <p>Press <kbd>S</kbd> or click the button to open the virtual store overlay.</p>
-      </section>
-    </main>
+    <!-- Hidden 2D Interface (rendered to texture) -->
+    <div id="virtual-2d-interface" class="virtual-2d-interface">
+      <header class="site-header">
+        <h1 class="site-title">Crystal & Stone Shop</h1>
+        <div class="header-actions">
+          <button id="closeVirtualStoreButton" class="button primary">Back to 3D</button>
+        </div>
+      </header>
 
-    <div id="storeOverlay" class="overlay hidden" aria-hidden="true" role="dialog" aria-modal="true">
-      <div class="overlay-backdrop" id="overlayBackdrop"></div>
-      <div class="store-panel" role="document">
-        <header class="store-header">
-          <div class="store-title">
-            <span class="logo">🔮</span>
-            <h3>Crystal & Stone Store</h3>
-          </div>
-          <div class="store-actions">
-            <button id="closeStoreButton" class="button">Close</button>
-          </div>
-        </header>
-
+      <main class="site-main">
         <section class="store-controls">
           <div class="control">
             <label for="searchInput">Search</label>
@@ -77,6 +140,14 @@
             </div>
           </aside>
         </section>
+      </main>
+    </div>
+
+    <!-- Virtual Screen Overlay (when accessing the 2D interface) -->
+    <div id="screen-overlay" class="screen-overlay hidden">
+      <div class="virtual-screen-content">
+        <button id="close-screen" class="close-screen">×</button>
+        <div id="screen-content"></div>
       </div>
     </div>
 

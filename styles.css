@@ -163,3 +163,468 @@ body {
 kbd {
   display: inline-block; padding: 2px 6px; border: 1px solid var(--border); border-bottom-width: 3px; border-radius: 6px; background: var(--card); font: 12px/1.2 monospace; color: var(--muted);
 }
+
+/* 3D Store Styles - Full Screen */
+.threejs-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(34, 211, 238, 0.1));
+  z-index: 1;
+}
+
+.loading-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(11, 16, 32, 0.95), rgba(16, 20, 38, 0.95));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: opacity 0.5s ease-out;
+}
+
+.loading-screen.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border);
+  border-top: 3px solid var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.instructions {
+  margin-top: 24px;
+  padding: 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.instructions ul {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+}
+
+.instructions li {
+  margin: 8px 0;
+  color: var(--muted);
+}
+
+/* 3D Object Information Panel */
+.crystal-info-panel {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 280px;
+  background: linear-gradient(180deg, rgba(16, 20, 38, 0.95), rgba(16, 20, 38, 0.9));
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  transform: translateX(320px);
+  transition: transform 0.3s ease-out;
+  backdrop-filter: blur(10px);
+  z-index: 5;
+}
+
+.crystal-info-panel.visible {
+  transform: translateX(0);
+}
+
+.crystal-info-panel h3 {
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.crystal-info-panel .crystal-emoji {
+  font-size: 24px;
+}
+
+.crystal-info-panel .crystal-meta {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.crystal-info-panel .crystal-price {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--accent-2);
+  margin-bottom: 12px;
+}
+
+.crystal-info-panel .crystal-energy {
+  margin-bottom: 16px;
+}
+
+.crystal-info-panel .energy-tag {
+  display: inline-block;
+  background: var(--accent);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  margin: 2px 4px 2px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.crystal-info-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.close-info-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.close-info-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* New 3D UI Elements */
+.controls-help {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 280px;
+  background: linear-gradient(180deg, rgba(16, 20, 38, 0.95), rgba(16, 20, 38, 0.9));
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  backdrop-filter: blur(10px);
+  z-index: 10;
+  transition: transform 0.3s ease-out;
+}
+
+.controls-help.hidden {
+  transform: translateX(-320px);
+}
+
+.controls-help h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+}
+
+.controls-help .controls ul {
+  margin: 8px 0 16px 0;
+  padding-left: 20px;
+}
+
+.controls-help .controls li {
+  margin: 6px 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.mini-cart {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(180deg, rgba(16, 20, 38, 0.95), rgba(16, 20, 38, 0.9));
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  backdrop-filter: blur(10px);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 120px;
+}
+
+.mini-cart .cart-icon {
+  font-size: 20px;
+}
+
+.mini-cart .cart-count {
+  background: var(--accent);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.mini-cart .cart-total {
+  font-weight: 600;
+  color: var(--accent-2);
+}
+
+/* Virtual 2D Interface (hidden but rendered to texture) */
+.virtual-2d-interface {
+  position: absolute;
+  top: -10000px;
+  left: -10000px;
+  width: 1200px;
+  height: 800px;
+  background: var(--bg);
+  overflow: hidden;
+  transform: scale(1);
+}
+
+.virtual-2d-interface .site-header {
+  background: linear-gradient(to bottom, rgba(10, 12, 24, 0.9), rgba(10, 12, 24, 0.7));
+  backdrop-filter: none;
+}
+
+.virtual-2d-interface .store-content {
+  height: calc(800px - 120px);
+}
+
+.virtual-2d-interface .product-grid {
+  height: 100%;
+  max-height: none;
+}
+
+/* Hide original site elements when 3D is active */
+body {
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+/* Screen in 3D world styles */
+.screen-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.screen-overlay.hidden {
+  display: none;
+}
+
+.virtual-screen-content {
+  width: 90vw;
+  height: 90vh;
+  max-width: 1200px;
+  max-height: 800px;
+  background: var(--bg);
+  border-radius: 16px;
+  border: 2px solid var(--border);
+  overflow: hidden;
+  position: relative;
+}
+
+.virtual-screen-content .close-screen {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: var(--text);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.virtual-screen-content .close-screen:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Point-and-Click Navigation */
+.navigation-arrows {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.nav-arrow {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.8), rgba(34, 211, 238, 0.8));
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  cursor: pointer;
+  pointer-events: all;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+}
+
+.nav-arrow:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 30px rgba(139, 92, 246, 0.5);
+}
+
+.nav-left {
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.nav-right {
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.nav-forward {
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.nav-back {
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.navigation-hotspots {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 16px;
+  z-index: 10;
+  pointer-events: all;
+}
+
+.hotspot {
+  background: linear-gradient(135deg, rgba(16, 20, 38, 0.9), rgba(16, 20, 38, 0.8));
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.hotspot:hover {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(34, 211, 238, 0.2));
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+}
+
+.location-indicator {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .controls-help {
+    width: 240px;
+    font-size: 14px;
+  }
+  
+  .mini-cart {
+    top: 10px;
+    right: 10px;
+    padding: 8px 12px;
+  }
+  
+  .crystal-info-panel {
+    width: calc(100vw - 40px);
+    right: 20px;
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .joystick {
+    bottom: 20px;
+    left: 20px;
+  }
+  
+  .joystick-base {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .joystick-stick {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .look-area {
+    bottom: 20px;
+    right: 20px;
+    width: 160px;
+    height: 160px;
+  }
+  
+  .controls-help {
+    width: calc(100vw - 40px);
+    left: 20px;
+    font-size: 12px;
+  }
+}
