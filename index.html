@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crystal & Stone Shop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <h1 class="site-title">Crystal & Stone Shop</h1>
+      <div class="header-actions">
+        <button id="openStoreButton" class="button primary">Open Store</button>
+      </div>
+    </header>
+
+    <main class="site-main">
+      <section class="hero">
+        <h2>Adorn your journey with the right energy</h2>
+        <p>Press <kbd>S</kbd> or click the button to open the virtual store overlay.</p>
+      </section>
+    </main>
+
+    <div id="storeOverlay" class="overlay hidden" aria-hidden="true" role="dialog" aria-modal="true">
+      <div class="overlay-backdrop" id="overlayBackdrop"></div>
+      <div class="store-panel" role="document">
+        <header class="store-header">
+          <div class="store-title">
+            <span class="logo">🔮</span>
+            <h3>Crystal & Stone Store</h3>
+          </div>
+          <div class="store-actions">
+            <button id="closeStoreButton" class="button">Close</button>
+          </div>
+        </header>
+
+        <section class="store-controls">
+          <div class="control">
+            <label for="searchInput">Search</label>
+            <input id="searchInput" type="text" placeholder="Search by name, color, or energy..." />
+          </div>
+          <div class="control">
+            <label for="categorySelect">Category</label>
+            <select id="categorySelect">
+              <option value="all">All</option>
+              <option value="crystal">Crystals</option>
+              <option value="stone">Stones</option>
+            </select>
+          </div>
+          <div class="control">
+            <label for="sortSelect">Sort</label>
+            <select id="sortSelect">
+              <option value="popularity">Popularity</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="name-asc">Name: A → Z</option>
+              <option value="name-desc">Name: Z → A</option>
+            </select>
+          </div>
+        </section>
+
+        <section class="store-content">
+          <div class="product-grid" id="productGrid" aria-live="polite"></div>
+          <aside class="cart" aria-label="Cart">
+            <h4>Cart</h4>
+            <div id="cartItems" class="cart-items"></div>
+            <div class="cart-footer">
+              <div class="totals">
+                <div class="row"><span>Subtotal</span><span id="subtotalAmount">$0.00</span></div>
+                <div class="row"><span>Tax (7%)</span><span id="taxAmount">$0.00</span></div>
+                <div class="row total"><span>Total</span><span id="totalAmount">$0.00</span></div>
+              </div>
+              <button id="checkoutButton" class="button primary" disabled>Checkout</button>
+            </div>
+          </aside>
+        </section>
+      </div>
+    </div>
+
+    <script src="./app.js" type="module"></script>
+  </body>
+</html>
