@@ -169,7 +169,12 @@ const state = {
   proximityThreshold: 4, // units
   nearbyCrystals: [],
   isInCloseUp: false,
-  closeUpTarget: null
+  closeUpTarget: null,
+
+  // Product info tablets
+  productTablets: [],
+  inspectedTablet: null,
+  inspectedTabletOriginal: null,
 };
 
 const elements = {
@@ -671,6 +676,16 @@ function createCrystalDisplays() {
     
     state.scene.add(crystal);
     state.crystalMeshes.push(crystal);
+
+    // Create a 2D canvas tablet near the crystal
+    const dirToCenter = new THREE.Vector3(-x, 0, -z).normalize();
+    const tabletPos = new THREE.Vector3(x, 1.6, z).add(dirToCenter.clone().multiplyScalar(0.8));
+    const tablet = buildProductTabletMesh(product);
+    tablet.position.copy(tabletPos);
+    // Face towards the center so it's readable from the aisle; DoubleSide material avoids backface issues
+    tablet.lookAt(new THREE.Vector3(0, 1.6, 0));
+    state.scene.add(tablet);
+    state.productTablets.push(tablet);
   });
 }
 
@@ -764,6 +779,167 @@ function createScreenContent() {
   state.virtualScreen.material.needsUpdate = true;
 }
 
+// Build a 2D canvas tablet mesh for a product
+function buildProductTabletMesh(product) {
+  const width = 1.6; // meters
+  const height = 1.0;
+  const geometry = new THREE.PlaneGeometry(width, height);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 768; // higher res for crispness
+  canvas.height = 480;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  const grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  grd.addColorStop(0, '#111827');
+  grd.addColorStop(1, '#0b1020');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Frame
+  ctx.strokeStyle = '#334155';
+  ctx.lineWidth = 8;
+  ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
+
+  // Title
+  ctx.fillStyle = '#e2e8f0';
+  ctx.font = 'bold 44px Inter, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(`${product.emoji}  ${product.name}`, 28, 80);
+
+  // Meta
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '28px Inter, sans-serif';
+  ctx.fillText(`${product.type === 'crystal' ? 'Crystal' : 'Stone'} • ${product.color}`, 28, 130);
+
+  // Energy tags
+  ctx.font = '24px Inter, sans-serif';
+  let y = 190;
+  product.energy.forEach((e) => {
+    const tag = `#${e}`;
+    const metrics = ctx.measureText(tag);
+    const padX = 12, padY = 8, radius = 10;
+    const w = metrics.width + padX * 2;
+    const h = 36;
+    // Rounded rect
+    const x = 28;
+    ctx.fillStyle = '#4c1d95';
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + w - radius, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+    ctx.lineTo(x + w, y + h - radius);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+    ctx.lineTo(x + radius, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#f1f5f9';
+    ctx.fillText(tag, x + padX, y + 26);
+    y += h + 12;
+  });
+
+  // Price
+  const priceStr = formatCurrency(product.priceCents);
+  ctx.fillStyle = '#22d3ee';
+  ctx.font = 'bold 40px Inter, sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText(priceStr, canvas.width - 28, 80);
+
+  // CTA hint
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#8b5cf6';
+  ctx.font = 'bold 26px Inter, sans-serif';
+  ctx.fillText('Click to inspect', canvas.width / 2, canvas.height - 28);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.anisotropy = 8;
+
+  const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide });
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.userData = { type: 'tablet', product };
+  return mesh;
+}
+
+// Animate inspection of a tablet (bring closer / return)
+function updateTabletInspection() {
+  if (!state.inspectedTablet || !state.inspectedTabletOriginal) return;
+
+  const tablet = state.inspectedTablet;
+  const original = state.inspectedTabletOriginal;
+
+  // Decide target: if marked as inspectingIn, move near camera; else return
+  const inspectingIn = original.mode === 'in';
+
+  if (inspectingIn) {
+    // Target position in front of camera
+    const dir = new THREE.Vector3();
+    state.camera.getWorldDirection(dir);
+    const targetPos = new THREE.Vector3().copy(state.camera.position).add(dir.multiplyScalar(2.2));
+
+    // Lerp position
+    tablet.position.lerp(targetPos, 0.15);
+    // Face the camera every frame
+    tablet.lookAt(state.camera.position);
+    // Slightly scale up
+    const targetScale = new THREE.Vector3(original.scale.x * 1.25, original.scale.y * 1.25, original.scale.z * 1.25);
+    tablet.scale.lerp(targetScale, 0.15);
+
+    // Close enough check
+    if (tablet.position.distanceTo(targetPos) < 0.02) {
+      // Hold position when close enough
+      tablet.position.copy(targetPos);
+    }
+  } else {
+    // Return to original
+    tablet.position.lerp(original.position, 0.15);
+    // Slerp rotation back by looking at original facing center
+    tablet.quaternion.slerp(original.quaternion, 0.15);
+    tablet.scale.lerp(original.scale, 0.15);
+
+    if (
+      tablet.position.distanceTo(original.position) < 0.02 &&
+      1 - Math.abs(tablet.quaternion.dot(original.quaternion)) < 0.01 &&
+      tablet.scale.distanceTo(original.scale) < 0.02
+    ) {
+      // Snap and clear when returned
+      tablet.position.copy(original.position);
+      tablet.quaternion.copy(original.quaternion);
+      tablet.scale.copy(original.scale);
+      state.inspectedTablet = null;
+      state.inspectedTabletOriginal = null;
+    }
+  }
+}
+
+function startTabletInspect(tablet) {
+  // If another tablet is active, cancel it back immediately
+  if (state.inspectedTablet && state.inspectedTablet !== tablet && state.inspectedTabletOriginal) {
+    // Snap previous back
+    state.inspectedTablet.position.copy(state.inspectedTabletOriginal.position);
+    state.inspectedTablet.quaternion.copy(state.inspectedTabletOriginal.quaternion);
+    state.inspectedTablet.scale.copy(state.inspectedTabletOriginal.scale);
+  }
+
+  // Save original transform in world space
+  const original = {
+    position: tablet.position.clone(),
+    quaternion: tablet.quaternion.clone(),
+    scale: tablet.scale.clone(),
+    mode: 'in',
+  };
+  state.inspectedTablet = tablet;
+  state.inspectedTabletOriginal = original;
+}
+
+function stopTabletInspect() {
+  if (!state.inspectedTablet || !state.inspectedTabletOriginal) return;
+  state.inspectedTabletOriginal.mode = 'out';
+}
+
 function animate() {
   requestAnimationFrame(animate);
   
@@ -786,6 +962,9 @@ function animate() {
   
   // Update proximity detection
   updateProximityDetection();
+
+  // Update tablet inspection animation
+  updateTabletInspection();
   
   // Render
   state.renderer.render(state.scene, state.camera);
@@ -804,7 +983,7 @@ function onMouseClick(event) {
   state.raycaster.setFromCamera(state.mouse, state.camera);
   
   // Check for intersections with all interactive objects
-  const intersects = state.raycaster.intersectObjects([...state.crystalMeshes, state.virtualScreen]);
+  const intersects = state.raycaster.intersectObjects([...state.crystalMeshes, state.virtualScreen, ...state.productTablets]);
   
   if (intersects.length > 0) {
     const clickedObject = intersects[0].object;
@@ -828,6 +1007,13 @@ function onMouseClick(event) {
       }
     } else if (userData.type === 'screen') {
       openVirtualScreen();
+    } else if (userData.type === 'tablet') {
+      // Toggle inspect for the tablet
+      if (state.inspectedTablet === clickedObject) {
+        stopTabletInspect();
+      } else {
+        startTabletInspect(clickedObject);
+      }
     }
   }
 }
@@ -1173,6 +1359,9 @@ function initEvents() {
       } else if (state.isScreenActive) {
         e.preventDefault();
         closeVirtualScreen();
+      } else if (state.inspectedTablet) {
+        e.preventDefault();
+        stopTabletInspect();
       } else if (state.isInCloseUp) {
         e.preventDefault();
         exitCrystalCloseUp();
