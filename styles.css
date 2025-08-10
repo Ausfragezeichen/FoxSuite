@@ -507,6 +507,7 @@ body {
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
   box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+  user-select: none;
 }
 
 .nav-arrow:hover {
@@ -560,6 +561,7 @@ body {
   backdrop-filter: blur(10px);
   font-size: 14px;
   font-weight: 600;
+  user-select: none;
 }
 
 .hotspot:hover {
@@ -627,4 +629,49 @@ body {
     left: 20px;
     font-size: 12px;
   }
+}
+
+/* Accessible focus for navigation controls */
+.nav-arrow:focus-visible,
+.hotspot:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+}
+
+/* Arrow tooltips */
+.nav-arrow::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 6px) scale(0.98);
+  background: rgba(16, 20, 38, 0.95);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.nav-left::after,
+.nav-right::after {
+  bottom: -44px;
+}
+
+.nav-forward::after {
+  top: calc(100% + 8px);
+}
+
+.nav-back::after {
+  bottom: calc(100% + 8px);
+}
+
+.nav-arrow:hover::after,
+.nav-arrow:focus-visible::after {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
 }

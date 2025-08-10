@@ -60,26 +60,27 @@
             <li>⌨️ <strong>H:</strong> Toggle help panel</li>
             <li>⌨️ <strong>Escape:</strong> Close panels / Exit close-up</li>
             <li>⌨️ <strong>Space:</strong> Exit crystal close-up</li>
+            <li>⌨️ <strong>Arrow Keys:</strong> Navigate left/right/forward/back</li>
           </ul>
           <p><strong>Current Location:</strong></p>
-          <div id="location-indicator" class="location-indicator">Main Hall</div>
+          <div id="location-indicator" class="location-indicator" aria-live="polite" role="status">Main Hall</div>
         </div>
         <button id="toggle-help" class="button">Hide Help</button>
       </div>
       
       <!-- Navigation Arrows -->
-      <div id="navigation-arrows" class="navigation-arrows">
-        <div id="nav-left" class="nav-arrow nav-left">◀</div>
-        <div id="nav-right" class="nav-arrow nav-right">▶</div>
-        <div id="nav-forward" class="nav-arrow nav-forward">▲</div>
-        <div id="nav-back" class="nav-arrow nav-back">▼</div>
+      <div id="navigation-arrows" class="navigation-arrows" role="navigation" aria-label="Camera navigation">
+        <div id="nav-left" class="nav-arrow nav-left" role="button" tabindex="0" aria-label="Go left" title="Go left">◀</div>
+        <div id="nav-right" class="nav-arrow nav-right" role="button" tabindex="0" aria-label="Go right" title="Go right">▶</div>
+        <div id="nav-forward" class="nav-arrow nav-forward" role="button" tabindex="0" aria-label="Go forward" title="Go forward">▲</div>
+        <div id="nav-back" class="nav-arrow nav-back" role="button" tabindex="0" aria-label="Go back" title="Go back">▼</div>
       </div>
       
       <!-- Navigation Hotspots -->
-      <div id="navigation-hotspots" class="navigation-hotspots">
-        <div id="hotspot-crystals" class="hotspot" data-target="crystal-garden">💎 Crystal Garden</div>
-        <div id="hotspot-screen" class="hotspot" data-target="computer-terminal">🖥️ Computer Terminal</div>
-        <div id="hotspot-entrance" class="hotspot" data-target="entrance">🚪 Entrance</div>
+      <div id="navigation-hotspots" class="navigation-hotspots" role="navigation" aria-label="Quick travel hotspots">
+        <div id="hotspot-crystals" class="hotspot" data-target="crystal-garden" role="button" tabindex="0" aria-label="Crystal Garden" title="Travel to Crystal Garden">💎 Crystal Garden</div>
+        <div id="hotspot-screen" class="hotspot" data-target="computer-terminal" role="button" tabindex="0" aria-label="Computer Terminal" title="Travel to Computer Terminal">🖥️ Computer Terminal</div>
+        <div id="hotspot-entrance" class="hotspot" data-target="entrance" role="button" tabindex="0" aria-label="Entrance" title="Travel to Entrance">🚪 Entrance</div>
       </div>
       
       <!-- Mini Cart Display -->

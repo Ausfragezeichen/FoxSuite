@@ -267,25 +267,53 @@ function updateLocationIndicator() {
     const location = cameraPositions[state.currentLocation];
     elements.locationIndicator.textContent = location.name;
   }
+  elements.locationIndicator.setAttribute("aria-label", elements.locationIndicator.textContent);
 }
 
 function updateNavigationArrows() {
+  const setArrowMeta = (arrowEl, direction, visible, nextLocationKey) => {
+    arrowEl.style.display = visible ? "flex" : "none";
+    if (!visible) {
+      arrowEl.removeAttribute("data-tooltip");
+      arrowEl.setAttribute("aria-label", `${direction[0].toUpperCase()+direction.slice(1)} unavailable`);
+      arrowEl.setAttribute("title", "");
+      return;
+    }
+    let label = "";
+    if (state.isInCloseUp && direction === "back") {
+      label = "Exit crystal close-up";
+    } else if (nextLocationKey && cameraPositions[nextLocationKey]) {
+      const destName = cameraPositions[nextLocationKey].name;
+      const dirWord = direction.charAt(0).toUpperCase() + direction.slice(1);
+      label = `${dirWord} to ${destName}`;
+    } else {
+      label = direction.charAt(0).toUpperCase() + direction.slice(1);
+    }
+    arrowEl.setAttribute("data-tooltip", label);
+    arrowEl.setAttribute("aria-label", label);
+    arrowEl.setAttribute("title", label);
+  };
+
   if (state.isInCloseUp) {
-    // In close-up mode, only show back arrow
-    elements.navLeft.style.display = "none";
-    elements.navRight.style.display = "none";
-    elements.navForward.style.display = "none";
-    elements.navBack.style.display = "flex";
+    setArrowMeta(elements.navLeft, "left", false, null);
+    setArrowMeta(elements.navRight, "right", false, null);
+    setArrowMeta(elements.navForward, "forward", false, null);
+    setArrowMeta(elements.navBack, "back", true, null);
     return;
   }
-  
+
   const location = cameraPositions[state.currentLocation];
-  
-  // Show/hide arrows based on available directions
-  elements.navLeft.style.display = location.availableDirections.includes("left") ? "flex" : "none";
-  elements.navRight.style.display = location.availableDirections.includes("right") ? "flex" : "none";
-  elements.navForward.style.display = location.availableDirections.includes("forward") ? "flex" : "none";
-  elements.navBack.style.display = location.availableDirections.includes("back") ? "flex" : "none";
+
+  // Compute next destinations
+  const nextLeft = location.availableDirections.includes("left") ? getNextLocation("left") : null;
+  const nextRight = location.availableDirections.includes("right") ? getNextLocation("right") : null;
+  const nextForward = location.availableDirections.includes("forward") ? getNextLocation("forward") : null;
+  const nextBack = location.availableDirections.includes("back") ? getNextLocation("back") : null;
+
+  setArrowMeta(elements.navLeft, "left", !!nextLeft && nextLeft !== state.currentLocation, nextLeft);
+  setArrowMeta(elements.navRight, "right", !!nextRight && nextRight !== state.currentLocation, nextRight);
+  setArrowMeta(elements.navForward, "forward", !!nextForward && nextForward !== state.currentLocation, nextForward);
+  setArrowMeta(elements.navBack, "back", !!nextBack && nextBack !== state.currentLocation, nextBack);
 }
 
 function startCameraTransition(targetLocation) {
@@ -1330,13 +1358,41 @@ function initEvents() {
   elements.navRight.addEventListener('click', () => navigateTo('right'));
   elements.navForward.addEventListener('click', () => navigateTo('forward'));
   elements.navBack.addEventListener('click', () => navigateTo('back'));
+  // Keyboard activation for navigation arrows
+  [
+    [elements.navLeft, 'left'],
+    [elements.navRight, 'right'],
+    [elements.navForward, 'forward'],
+    [elements.navBack, 'back'],
+  ].forEach(([el, dir]) => {
+    el.setAttribute('role', 'button');
+    el.setAttribute('tabindex', '0');
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        navigateTo(dir);
+      }
+    });
+  });
   
   // Hotspot events
   elements.hotspots.forEach(hotspot => {
+    const target = hotspot.getAttribute('data-target');
+    if (target) {
+      const name = (cameraPositions[target] && cameraPositions[target].name) || target;
+      hotspot.setAttribute('title', `Travel to ${name}`);
+    }
     hotspot.addEventListener('click', () => {
-      const target = hotspot.getAttribute('data-target');
       if (target && cameraPositions[target]) {
         startCameraTransition(target);
+      }
+    });
+    hotspot.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (target && cameraPositions[target]) {
+          startCameraTransition(target);
+        }
       }
     });
   });
@@ -1399,6 +1455,16 @@ function initEvents() {
         case 'ArrowRight': navigateTo('right'); break;
         case 'ArrowUp': navigateTo('forward'); break;
         case 'ArrowDown': navigateTo('back'); break;
+      }
+    }
+    // Announce destination on navigation keys
+    if (["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(e.code)) {
+      const dirMap = {ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'forward', ArrowDown: 'back'};
+      const dir = dirMap[e.code];
+      const next = getNextLocation(dir);
+      if (next && cameraPositions[next] && next !== state.currentLocation) {
+        const name = cameraPositions[next].name;
+        elements.locationIndicator.setAttribute('aria-label', `Navigating ${dir} to ${name}`);
       }
     }
   });
